@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitoramento de Pedidos</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px;
+      background: linear-gradient(120deg, #f3e5f5, #ede7f6);
+    }
+    h1 {
+      color: #6a1b9a;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .form-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+      color: #4a148c;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #7b1fa2;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #4a148c;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 80%;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #ba68c8;
+      color: white;
+    }
+    .highlight {
+      background-color: #ffd54f;
+      font-weight: bold;
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse {
+      from { background-color: #ffd54f; }
+      to { background-color: #fff176; }
+    }
+    #resultado {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 18px;
+      color: #4a148c;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Monitoramento de Pedidos</h1>
+
+  <div class="form-container">
+    <label for="hora">Hora:</label>
+    <input type="time" id="hora">
+
+    <label for="quantidade">Quantidade:</label>
+    <input type="number" id="quantidade" min="1" max="9999">
+
+    <button onclick="adicionarPedido()">Registrar</button>
+    <button onclick="calcularTop3Movimento()">Top 3 Horários com Mais Pedidos</button>
+    <button onclick="resetarPedidos()">Zerar Dados</button>
+  </div>
+
+  <div id="resultado"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Hora</th>
+        <th>Quantidade de Pedidos</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaPedidos"></tbody>
+  </table>
+
+  <script>
+    let pedidos = {};
+
+    function adicionarPedido() {
+      const hora = document.getElementById("hora").value;
+      const quantidade = parseInt(document.getElementById("quantidade").value);
+      if (!hora || isNaN(quantidade)) return alert("Preencha todos os campos corretamente.");
+
+      if (!pedidos[hora]) pedidos[hora] = 0;
+      pedidos[hora] += quantidade;
+
+      atualizarTabela();
+    }
+
+    function atualizarTabela(destacar = []) {
+      const corpo = document.getElementById("tabelaPedidos");
+      corpo.innerHTML = "";
+      const horas = Object.keys(pedidos).sort();
+      horas.forEach(hora => {
+        const destaque = destacar.includes(hora) ? "highlight" : "";
+        const linha = `<tr class="${destaque}"><td>${hora}</td><td>${pedidos[hora]}</td></tr>`;
+        corpo.innerHTML += linha;
+      });
+    }
+
+    function calcularTop3Movimento() {
+      const resultado = document.getElementById("resultado");
+      const listaOrdenada = Object.entries(pedidos).sort((a, b) => b[1] - a[1]);
+      const top3 = listaOrdenada.slice(0, 3);
+
+      if (top3.length > 0) {
+        const texto = top3.map(([hora, qtd], i) => `${i + 1}º: ${hora} (${qtd} pedidos)`).join("<br>");
+        resultado.innerHTML = `Top 3 horários com mais pedidos:<br>${texto}`;
+        const horasTop3 = top3.map(item => item[0]);
+        atualizarTabela(horasTop3);
+      } else {
+        resultado.textContent = "Nenhum dado disponível.";
+      }
+    }
+
+    function resetarPedidos() {
+      pedidos = {};
+      document.getElementById("tabelaPedidos").innerHTML = "";
+      document.getElementById("resultado").textContent = "";
+    }
+  </script>
+</body>
+</html>
